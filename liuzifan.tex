@@ -1,0 +1,444 @@
+\documentclass{llncs}
+%
+\usepackage{makeidx}  % allows for indexgeneration
+\usepackage{epsfig}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amssymb}
+\usepackage{array}
+
+%
+\begin{document}
+%
+\mainmatter
+%
+\title{A Cloud Service Enhanced Method Supporting Context-aware Applications}
+%
+\author{Zifan Liu\inst{1} \and Qing Cai\inst{2} \and Xiaolong Xu\inst{2} \and Wanchun Dou\inst{1}
+\and Shui Yu\inst{3}
+%
+\institute{State Key Laboratory for Novel Software Technology, Nanjing University, Nanjing, China\\
+\email{nju.liuzf@gmail.com, douwc@nju.edu.cn}
+\and
+School of Computer and Software, Nanjing University of Information Science and Technology, Nanjing, China\\
+\email{1392134662@qq.com, njuxlxu@gmail.com}
+\and
+School of Information Technology, Deakin University, Melbourne, Australia\\
+\email{shui.yu@deakin.edu.au}}
+}
+\maketitle
+
+\begin{abstract}
+Mobile cloud computing is emerging as a powerful platform for running demanding applications migrated from mobile devices to a remote cloud. For some real-time or urgent deadline-constrained applications, the migration process generates intolerable transmission latency. Cloudlets co-located with Access Points (APs) are considered as an efficient way to reduce such transmission latency. However, it is still a challenge to manage the cloudlets that have been deployed for fixed context-aware applications to achieve cost savings. In view of this challenge, a cloud service enhanced method supporting context-aware applications is proposed in this paper. Specifically, a cloudlet management principle is designed to provide a reference for cloudlet status judgment. Then a relevant cloud service enhanced method is proposed to decide which active cloudlets should be shut down. Finally, the experimental and analytical results demonstrate the validity of our proposed method.
+\keywords{cloud service, context-aware applications, mobile cloud computing, cloudlet, cost savings}
+\end{abstract}
+%
+\section{Introduction}
+%
+With increasing resource requirements of mobile applications in computation, communication and storage, mobile cloud computing is emerging as an effective way to realize on-demand resource provisioning for mobile applications \cite{lo:gao,xu:liang}. Mobile cloud computing provides abundant storage resources and high computing capability for migrated demanding applications, but at the same time, such application migration generates long transmission latency \cite{lo:gao}. And the latency is intolerable for users in some mobile applications, such as interactive gaming, speech recognition, video playback \cite{cohen,mohiuddin:mohammad}, to name a few.
+
+As an efficient and effective cloud deployment paradigm, cloudlets are deployed around mobile devices to reduce the transmission latency for mobile applications \cite{rimal:van,dinh:lee}. Generally, cloudlets are resource-rich and self-managed which can be organized by harnessing the personal idle servers of other individual users or directly provisioned by the network operators (NOs) \cite{lo:gao}. Mobile devices can offload their mobile applications to nearby cloudlets rather than remote clouds for processing. As a result, the physical proximity between mobile users and cloudlets is beneficial to transmission time reduction for workload offloading.
+
+The cloudlets are in active mode when they are placed to enhance the local cloud services supporting context-aware applications. These active cloudlets consume overwhelming power which leads to high running cost. When there are no mobile devices within cloudlet coverage, the cloudlets in active mode are unnecessary to run. Such cloudlets should be shut down to achieve cost savings for energy consumption.
+
+Here, an example of cloudlet management is presented to illustrate the problem investigated in this paper. There are a number of mobile devices with fixed context-aware applications, and 5 cloudlets, i.e., $A, B, C, D$, and $E$, with APs distributed in 3 rooms (i.e., Room1, Room2, and Room3) of a conference center, as shown in Fig.~1. In Fig.~1, cloudlets $A, B, C$ are placed in Room1, cloudlets $D$ and cloud $E$ are placed in Room2 and Room3, respectively. In Fig.~1(a), there are no mobile devices within the coverage of cloudlets $C$ and $E$, but they consume a certain amount of energy. In such circumstance, cloudlets $C$ and $E$ should be shut down to achieve cost savings as illustrated in Fig.~1(b).
+
+\begin{figure}
+\centering
+\epsfig{figure=fig1.eps,width=12.2cm}
+\caption{An example of cloudlet management}
+\end{figure}
+
+However, current researches mainly focus on cloudlet placement to reduce energy consumption and network delay \cite{xu:liang:2,jia:cao}. Based on these observations, it is still a challenge to manage the cloudlets that have already been deployed for fixed context-aware applications to achieve cost savings.
+
+In view of this challenge, a cloud service enhanced method supporting context-aware applications is proposed in this paper. Specifically, a cloudlet management principle is designed to provide a reference for cloudlet status judgments. Then a cloud service enhanced method is proposed to decide which active cloudlets should be shut down. Finally, the experimental results demonstrate that the proposed method is both effective and efficient.
+
+The rest of the paper is organized as follows. A cloudlet management principle is presented in Sect.~2. Sect.~3 elaborates a cloud service enhanced method supporting context-aware applications. Experimental evaluations are conducted in Sect.~4 to demonstrate the validity of our method. Some related work is described in Sect.~5. Sect.~6 concludes the paper and gives an outlook on possible future work.
+
+%
+\section{Cloudlet Management Principle}
+%
+In this section, formalized concepts are given to facilitate our further discussion for cloud service enhancement supporting context-aware applications. To simplify the discussion, key terms used in our cloudlet management principle are summarized in Table~1.
+
+\begin{table}
+\caption{Key Terms and Descriptions}
+\begin{center}
+\begin{tabular}{l@{\quad}l}
+\hline
+Terms & Description\\
+\hline\rule{0pt}{12pt}
+$S$ & The set of the points in device activity area.\\
+$DA$ & The set of device activity area, $DA = \left\{da_{1}, da_{2},\dots, da_{N}\right\}$.\\
+$da_{n}$ & The $n$--th device activity area.\\
+$MD$ & The set of mobile devices, $MD = \left\{md_{1}, md_{2},\dots, md_{M}\right\}$.\\
+$md_{n}$ & The set of mobile devices in $da_{n}, md_{n} = \left\{md_{n,1}, md_{n,2},\dots, md_{n,Z}\right\}$.\\
+$mp_{m}$ & The position $md_{m}, mp_{m} = \left(mpx_{m}, mpy_{m}\right)$.\\
+$cl_{n,i}$ & The $i$-th cloudlet in dan.\\
+$cp_{n,i}$ & The central position of $cl_{n,i}, cp_{n,i} = \left(cpx_{n,i}, cpy_{n,i}\right)$.\\
+$dc_{n,i}$ & The device collection of $cl_{n,i}$.\\
+$r_{n,i}$ & The coverage radius for $cl_{n,i}$.\\
+$IC_{n,i}$ & The indoor cloudlet coverage collection of $cl_{n,i}$.\\
+$\rho$ & The density threshold for cloudlet placement judgment.\\[2pt]
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+To enhance cloud service supporting fixed context-aware applications, a 3-tier mobile cloud infrastructure with cloudlet is introduced, as shown in Fig.~2. In this infrastructure, the cloudlets are co-located with APs, the remote cloud provides data storage and computing service, and the mobile devices are clients that can access the mobile cloud service through wireless networks. Compared to the traditional client-server communication model \cite{lo:gao} without cloudlet, it is more powerful to reduce access latency by leveraging such 3-tier infrastructure. Via the cloudlets placed nearby, mobile devices can get direct cloud computing resources through AP to access cloudlets in the network.
+
+\begin{figure}
+\centering
+\epsfig{figure=fig2.eps,width=12.2cm}
+\caption{Mobile cloud infrastructure with cloudlet}
+\end{figure}
+
+Generally, there are various shapes of cloudlet management areas in practice. As other shaped areas can be assembled by multiple rectangles of different sizes, the cloudlet management area is defined by a rectangle in this paper.
+
+\begin{definition}[Cloudlet Management Area]
+Cloudlet management area is defined by the $x$--$y$ plane with definite ranges of $x$--axis and $y$--axis, denoted as $S = \left\{(x, y) |0 \leq x \leq X, 0 \leq y \leq Y\right\}$.
+\end{definition}
+
+Within the cloudlet management area, there are a number of device activity areas, denoted as $DA = \left\{da_{1}, da_{2},…, da_{N}\right\} (DA \subseteq S)$, where $N$ is the number of device activity areas in $S$. Each device activity area has the $x$--$y$ plane to show the range.
+
+\begin{definition}[Divisional Device Activity Area]
+For the $n$--th $(1 \leq n \leq N)$ device activity area $da_{n}$, it is defined by the $x$--$y$ plane with definite ranges of $x$--axis and $y$--axis, it is denoted as $da_{n} = \{(dax_{n}, day_{n}) |0 \leq dax_{n} \leq X_{n}, 0 \leq day_{n} \leq Y_{n}\}$.
+\end{definition}
+
+Within the cloudlet management area, there are a number of mobile devices distributed randomly, denoted as $MD = {md_1, md_2,\dots, md_M}$, where $M$ is the number of devices in $S$. Each mobile device has a position to show their locations.
+
+\begin{definition}[Mobile Device Position]
+For the $m$--th $(1 \leq m \leq M)$ mobile device $md_{m}$, the device is located at some positions that is a 2-tuple in $S$, denoted as $mp_m = (mpx_m, mpy_m)$, where $mpx_m$ and $mpy_m$ are the $x$--axis value and the $y$--axis value of $mp_m$, respectively.
+\end{definition}
+
+Each cloudlet is co-located with an AP. Let $cl_n$ be a collection of cloudlets located within $da_n$ and $z_n$ $(z_n \geq 1)$ be the total number of cloudlets in $cl_n$. Then the total number $K$ of cloudlets in S can be calculated by
+
+\begin{equation}
+  K = \sum_{n=1}^{N}z_n
+\end{equation}
+
+Each deployed cloudlet has a central position, which is beneficial to confirm the covered mobile devices.
+
+\begin{definition}[Cloudlet Central Position]
+For the $i$--th $(1 \leq i \leq z_n)$ cloudlet $cl_{n,i}$ in the $n$--th device activity area $da_n$, the relevant central position is location where AP is placed, which is a 2-tuple in dan, denoted as $cp_{n,i}= (cpx_{n,i}, cpy_{n,i})$, where $cpx_{n,i}$ is the $x$--axis value and $cpy_{n,i}$ is the $y$--axis value of $cl_{n,i}$.
+\end{definition}
+
+The cloudlet can enhance the cloud service for users within cloudlet coverage area. In order to identify whether the cloudlets need to turn off, it is important to detect the device collection of cloudlet central positions.
+
+\begin{definition}[Cloudlet Coverage Collection]
+For the $i$--th cloudlet $cl_{n,i}$ in $da_n$, the corresponding device collection is defined by $dc_{n,i} = \{md_m| dis(mp_m, cp_{n,i})$ $\leq r_{n,i}, 1 \leq m \leq M\}$, where $dis(mp_m, cp_{n,i})$ is calculated by
+\begin{equation}
+dis(mp_m, cp_{n,i}) = \sqrt{(mpx_m - cpx_{n,i})^2 + (mpy_m - cpy_{n,i})^2}
+\end{equation}
+\end{definition}
+
+Some mobile devices may be covered simultaneously by multiple cloudlets in different areas. In the circumstances, the real device collection of a cloudlet central position should subtract the number of devices outdoor. Suppose there are a set of mobile devices in $n$--th device activity area $da_n$, denoted as $MD_n = \{md_{n,1}, md_{n,2},\dots, md_{n,Z}\}$, where $Z$ is the number of devices in dan. Then an indoor cloudlet coverage collection is defined as follows.
+
+\begin{definition}{Indoor Cloudlet Coverage Collection}
+For the $i$--th cloudlet $cl_{n,i}$ in $da_n$, the corresponding indoor cloudlet coverage collection, denoted as $IC_{n,i}$, is defined by
+\begin{equation}
+  IC_{n,i} = dc_{n,i} \cap MD_n
+\end{equation}
+\end{definition}
+
+Fig.~3 gives an example of indoor cloudlet coverage collection of $cloudlet$, the radius of $cloudlet$ is $r$ placed in the center $O$. The devices $a_1, a_2, a_3, a_4$ and $a_5$ are covered by cloudlet, but only devices $a_3$ and $a_4$ are in Room1. So the indoor cloudlet coverage collection of $cloudlet$ is $\{a_3, a_4\}$.
+
+\begin{figure}
+\centering
+\epsfig{figure=fig3.eps,height=6cm}
+\caption{An example of indoor cloudlet coverage collection of $cloudlet$}
+\end{figure}
+
+In this paper, the coverage density plays a key role in our process of cloudlet. To achieve the goal of cost savings for mobile users within $S$, a cloudlet management principle is presented as a measurement for cloudlet status management.
+
+\begin{definition}{Cloudlet Management Principle}
+If the $i$--th cloudlet $cl_{n,i}$ with central position $G(x, y)$ runs in active mode to serve mobile users within $da_n$, the number of indoor cloudlet coverage collection $IC_{n,i}$ of $cl_{n,i}$ should satisfy the condition that $\left|IC_{n,i}\right| \geq \rho$, where $\rho$ is a density threshold for cloudlet status management judgment.
+\end{definition}
+%
+\section{Cloud Service Enhanced Method Supporting Context-aware Applications}
+%
+In this section, a cloud service enhancement method supporting context-aware applications is presented for the mobile cloudlet placement. This method consists of the three steps specified in detail by Fig.~4.
+
+\begin{figure}
+\centering
+\epsfig{figure=fig4.eps,width=12.2cm}
+\caption{Specifications of cloud service enhanced method supporting context-aware applications}
+\end{figure}
+%
+\subsection{Step1: Mobile device positions identification}
+%
+In order to present our cloud service enhanced method, it is essential to locate the mobile devices for analysis. Currently, Mobile Location Based Service (MLBS) is a pretty proven technology, which can accurately locate the mobile devices via a mobile terminal or a personal geographical through wireless network \cite{wang:wang,constandache}. According to the basic principles of mobile location, MLBS can be broadly divided into two categories: network-based location technology and terminal-based location technology \cite{lee:wicke}. Besides, mobile devices also can be located via combining these two location technologies.
+
+Here, considering the Internet surfers in a cloud service enhanced network, network-based location technology is more appropriate to locate the mobile devices. Even if the locations of mobile devices change, it can be accurately located in no time. Taking advantage of such technology, a set of device positions are identified for further cloudlet management.
+%
+\subsection{Step2: Device collection generation}
+%
+The cloudlets are dispersedly deployed all over the device area and they will affect the largest number of mobile devices if they are all active. Yet not all the cloudlets can be turned on according to the cost saving consideration. Besides, in real world, the mobile devices usually scatter in an uneven distribution, thus it is appropriate that we select several cloudlets to cover considerable mobile devices. On this purpose, the collection of mobile devices that each cloudlets covers is identified.
+
+We consider the device positions $MP = \{mp_1, mp_2,\dots, mp_N\}$ gained by Step1 and the coverage radius $r$ of every cloudlet. For each cloudlet $cl_{n,i}$, all the mobile devices, the distances of which and $cl_{n,i}$ are less than $r$, are added to corresponding device collection $dc_i$. Additionally, as $cl_{n,i}$ is in the device area $da_n$, it cannot affect the devices outside of this area, thus all the mobile devices outside are deleted from $dc_{n,i}$.
+
+Algorithm~1 specifies the generation process of device collections. For each collection, the devices outside the corresponding device area are deleted.
+
+\begin{algorithm}
+\caption{Device Collection Generation$(MD, CL)$}
+\begin{algorithmic}[1]
+    \REQUIRE A set of mobile device $MD$ and a set of cloudlet $CL$.
+    \ENSURE A set of device collections.
+    \FOR{$i = 1 \to N$}
+        \FOR{$j = 1 \to cl_{n.\mbox{size}}$}
+            \IF{$dis(mp_i, cl_{i,j}) < r_{i,j}$}
+                \STATE add $md_i$ to $dc_{i,j}$
+            \ENDIF
+        \ENDFOR
+    \ENDFOR
+    \FOR{$i = 1 \to N$}
+        \FOR{$j = 1 \to cl_{n.\mbox{size}}$}
+            \STATE{$ic_{i,j} \gets dc_{i,j}$}
+            \FOR{$mp_k$ in $dc_{i,j}$}
+                \IF{$mp_k$ is not in $da_i$}
+                    \STATE Delete $mp_k$ from $ic_{i,j}$
+                \ENDIF
+            \ENDFOR
+        \ENDFOR
+    \ENDFOR
+\end{algorithmic}
+\end{algorithm}
+%
+\subsection{Step3: Cloudlet management}
+%
+Take advantage of Step2, the cloudlets which should be active are determined in this step. The device collections gained by Step2 differ in size and it is a waste to turn on a cloudlet which covers only few mobile devices. Therefore, a cloudlet management principle $\rho$, defined in Definition~5, is presented to filter the device collections. Concretely, $\rho$ represents the least number of mobile devices that an active cloudlet should cover. All cloudlets that dissatisfy such threshold are shut down to reduce energy cost.
+
+Furthermore, the coverage area of these cloudlets may overlap partly. Consider the case that numerous mobile devices gather in the overlapped area of two cloudlets and few in separate areas. In view of the cloudlet threshold, both two cloudlets should be turned on, which generates a waste compared with turning on only one cloudlet of them. In order to overcome such problem, a greedy algorithm is employed in our method. First, the largest device collection, denoted as $dc_i$, is chosen and $cl_i$ is added in result collection, denoted as $clo$. Second, for all the mobile devices in $dc_i$, delete them from every device collection. Repeat the two steps until sizes of all device collections are smaller than $\rho$. Then the cloudlets in result collection are turned on, while remaining cloudlets are shut down.
+
+Algorithm~2 specifies management process of all cloudlets in device management area. The set of device collections is generated by Step1. All the cloudlets in $clo$ are turned on while others are shut down.
+
+\begin{algorithm}
+\caption{Cloudlet management$(IC)$}
+\begin{algorithmic}[1]
+    \REQUIRE A set of device collections $IC$.
+    \ENSURE The cloudlet management policy.
+    \STATE $clo \gets \emptyset$
+    \FOR{$i = 1 \to N$}
+        \WHILE{$\TRUE$}
+            \STATE $ic$ is the largest device collection in $da_i$
+            \IF{$\left|ic\right| > \rho$}
+                \STATE add $ic$ to $clo$
+                \FOR{each $ic_{i,k}$ in $da_i$}
+                    \STATE $ic_{i,k} \gets ic_{i,k} - ic$
+                \ENDFOR
+            \ELSE
+                \STATE \textbf{break}
+            \ENDIF
+        \ENDWHILE
+    \ENDFOR
+    \FOR{$ic_{i,j}$ in $IC$}
+        \IF{$ic_{i,j}$ is in $clo$}
+            \STATE turn on $cl_{i,j}$
+        \ENDIF
+    \ENDFOR
+\end{algorithmic}
+\end{algorithm}
+%
+\section{Experimental Evaluation}
+%
+In this section, HANA in-memory database is employed to evaluate the performance of our proposed cloud service enhanced method supporting context-aware applications.
+%
+\subsection{Experiment Settings}
+%
+In our experiments, two nodes are engaged to create a HANA cloud, including a mater and a slave, and the configuration of the hardware and the software is specified in Table~2.
+
+\begin{table}
+\caption{The Experiment Context}
+\begin{center}
+\begin{tabular}{l|m{5cm}|m{5cm}}
+\hline
+ & \textbf{Client} & \textbf{HANA Cloud}\\
+\hline
+Hardware & Lenovo Thinkpad T430 machine with Intel i5-3210M 2.50GHz processor, 4GB RAM and 250GB Hard Disk. & Master/Slave: HP Z800 Workstation Intel(R) Multi-Core X5690 Xeon(R), 3.47GHz/12M Cache, 6cores, 2 CPUs, 128GB (8$\times$8GB+4$\times$16GB) DDR3 1066MHz ECC Reg RAM;
+1 disk on the master and 2 disks on the slave: 2TB,7.2K RPM SATA Hard Drive\\
+\hline
+Software & Windows 7 Professional 64bit OS and HANA Studio. & SUSE Enterprise Linux Server 11 SP3 and SAP HANA Platform SP07\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+To simplify the experimental evaluation on our method, a case study is presented. The shape of device management area is a square with sides of 140 meters. There are five separate device activity areas, denoted as area $a, b, c, d, e$, in the device management area. In each device activity area, one or more cloudlets have been deployed and most space of those areas is covered by at least one cloudlet. Over the whole device management area, a set of mobile device positions is randomly generated. In practice, the cloudlet management principle $\rho$ is set to 15 and the coverage radius $r$ is set to 25m. The detailed experimental parameters are specified in Table~3.
+
+\begin{table}
+\caption{The Experiment Context}
+\begin{center}
+\begin{tabular}{l|c}
+\hline
+\multicolumn{1}{c|}{\textbf{Parameter item}} & \textbf{Domain}\\
+\hline
+The maximum $x$--axis value $X$ & 140m\\
+\hline
+The maximum $y$--axis value $Y$ & 140m\\
+\hline
+Cloudlet management principle $\rho$ & 15\\
+\hline
+The radio range $r$ of all mobile cloudlets & 25m\\
+\hline
+The number of mobile devices & 200\\
+\hline
+The maximum $x$--axis value $X$ & 140m\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Performance Evaluation}
+
+In this section, performance evaluations are presented to discuss the coverage number of mobile devices by using our method compared with this value without cloudlet management. For the device activity areas without cloudlet management, these cloudlets cannot be shut down. As numerous mobile devices are distributed in the device management area, the cloudlet covered mobile devices under the above two situations, i.e., with cloudlet management by our method and without cloudlet management are presented.
+
+In Fig.~5, the distribution of mobile devices is shown without cloudlet management. Most devices gather in area $a, b$, and $d$. Concretely, the right bottom part of area $a$, the upper part of area $b$ and the center part of area $d$ are the dense region of mobile devices. In our experiments, the walls of each activity area are radiation resistant and the cloudlet cannot affect the mobile devices that outside of corresponding area. The experimental results are illustrated by Fig.~6.
+
+\begin{figure}
+\centering
+\epsfig{figure=fig5.eps,height=5cm}
+\caption{Mobile device distribution and cloudlets status before using our method}
+\end{figure}
+
+\begin{figure}
+\centering
+\epsfig{figure=fig6.eps,height=5cm}
+\caption{Cloudlet coverage numbers in each device activity area before using our method}
+\end{figure}
+
+In Fig.~6, the cloudlet coverage number in each activity area is compared with total device number in such area. From this comparison, we can find that nearly all mobile devices are covered by cloudlets. Under this situation, all cloudlets are active that generates a certain amount of running costs.
+
+Then our method is conducted on the same conditions. The management results of our method after cloudlet management are presented in Fig.~7. Compared with Fig.~5, only 4 of the 10 cloudlets are active. Furthermore, the cloudlet coverage number, as shown by Fig.~8, is 175 out of total 200, which is quite close to the number, 184 out of 200, before leveraging our method.
+
+\begin{figure}
+\centering
+\epsfig{figure=fig7.eps,height=5cm}
+\caption{Mobile device distribution and cloudlets status after using our method}
+\end{figure}
+
+\begin{figure}
+\centering
+\epsfig{figure=fig8.eps,height=5cm}
+\caption{Cloudlet coverage numbers in each device activity area after using our method}
+\end{figure}
+
+From the experimental evaluation, we can find after cloudlet management by our method, the cloudlet coverage value is similar to this value without cloudlet management. But our method can greatly reduce the energy consumption and the running costs of cloudlets, since only 4 of total 10 cloudlets running after cloudlet management.
+
+\section{Related Work and Comparison Analysis}
+
+Currently, many researches of mobile cloud computing have been proposed to improve the computing capacity of mobile devices \cite{lo:gao,chen}. However, the clouds are geographically far away from mobile users, in the result of which a huge latency generates during the workload offloading between mobile devices and remote clouds. Thus cloudlet is applied close to users to provide compute capability and data storage, which can greatly decrease the response time. They have been fully investigated in \cite{khan:wang,xia:liang,bahtovski,whaiduzzaman,artail:frenn}, to name a few.
+
+In \cite{khan:wang}, the author proposed a network architecture, which is cost-effective via combining localized and distributed mini-clouds and fast-deployable wireless mesh networks. Xia \emph{et al}. \cite{xia:liang} devised an efficient online algorithm to solve an online location-aware offloading problem in a two-tiered mobile cloud computing environment, which consists of a local cloudlet and remote clouds. In \cite{whaiduzzaman}, a framework named PEFC (Performance Enhancement Framework of Cloudlet) was proposed to enhance the finite resource cloudlet performance by increasing cloudlet resources. Artail \emph{et al.} \cite{artail:frenn} formulated a more ubiquitous solution to decrease high network latency of remote cloud services, which relies on a network of cloudlets distributed within a geographic area. Despite the increasing momentum of cloudlet research, the cost of cloudlets has largely been overlooked.
+
+Current researches mainly focus on cloudlet placement to reduce energy consumption and network delay. Wu \emph{et al.} \cite{wu:ying} designed a novel virtual currency tailored for the cloudlet-based multi-lateral resource exchange framework, which made the resource exchange efficiently. Ravi \emph{et al.} \cite{ravi:peddoju} proposed a model to tackle the mobility and energy efficiency of mobile cloud computing. But they ignore the energy consumption of the redundant cloudlets. The best solution is to effectively manage the cloudlets’ usage. Thus we formulate a cloudlet management principle to save energy consumption of the cloudlets.
+
+\section{CONCLUSION AND FUTURE WORK}
+
+In this paper, a cloud service enhanced method supporting context-aware applications is proposed in this paper. Specifically, a cloudlet management principle is designed to provide a reference for cloudlet status judgments. Then a cloud service enhanced method is proposed to decide which active cloudlets should be shut down. Finally, the experimental and analytical results demonstrate that the proposed method is both effective and efficient.
+
+For future work, we plan to apply our cloud service enhanced method to real-world cloudlet platform. Besides, we will analyze energy consumption of the cloudlet management in different environment. And we intend to find a better energy-efficient method to manage cloudlets status.
+
+\section*{Acknowledgement}
+
+This research is partially supported by the National Science Foundation of China under Grant No. 91318301, No. 61273232 and No. 61321491, the Key Research and Development Project of Jiangsu Province under Grant No. BE2015154, the Collaborative Innovation Center of Novel Software Technology and Industrialization, Nanjing University. Besides the research is also partly supported by the Program for New Century Excellent Talents in University under NCET-13-0785.
+% ---- Bibliography ----
+%
+\begin{thebibliography}{99}
+%
+\bibitem{lo:gao}
+Li, Y., Gao, W.:
+Code offload with least context migration in the mobile cloud.
+IEEE Conference on Computer Communications (INFOCOM), pp. 1876-1884(2015).
+
+\bibitem{xu:liang}
+Xu, Z., Liang, W., Xu, W., Jia, M., Guo, S.:
+Efficient algorithms for capacitated cloudlet placements.
+IEEE Transactions on Parallel and Distributed Systems, vol. 27, no. 10, pp. 2866-2880(2016).
+
+\bibitem{cohen}
+Cohen, J.:
+Embedded speech recognition applications in mobile phones: Status, trends, and challenges.
+IEEE International Conference on Acoustics, Speech and Signal(ICASSP), pp. 5352-5355(2008).
+
+\bibitem {mohiuddin:mohammad}
+Mohiuddin, K., Mohammad, A. R., Raja, A. S., Begum, S. F.:
+Mobile-CLOUD-mobile: Is shifting of load intelligently possible when Barriers Encounter?.
+IEEE International Conference on Information Science and Digital Content Technology (ICIDT), vol. 2, pp. 326-332(2012).
+
+\bibitem{rimal:van}
+Rimal, B. P., Van, D. P., Maier, M.:
+Cloudlet enhanced fiber-wireless access networks for mobile-edge computing.
+IEEE Transactions on Wireless Communications, vol. 16, no. 6, pp. 3601-3618(2017).
+
+\bibitem{dinh:lee}
+Dinh, H. T., Lee, C., Niyato, D., Wang, P.:
+A survey of mobile cloud computing: architecture, applications, and approaches.
+Wireless Communications and Mobile Computing, vol. 13, no. 18, pp. 1587-1611(2011).
+
+\bibitem{xu:liang:2}
+Xu, Z., Liang, W., Xu, W., Jia, M., Guo, S.:
+Capacitated cloudlet placements in Wireless Metropolitan Area Networks.
+IEEE Conference on Local Computer Networks (LCN), pp. 570-578(2015).
+
+\bibitem{jia:cao}
+Jia, M., Cao, J., Liang, W.:
+Optimal cloudlet placement and user to cloudlet allocation in wireless metropolitan area networks.
+IEEE Transactions on Cloud Computing, pp. 2168-7161(2015).
+
+\bibitem{wang:wang}
+Wang, H., Wang, Z., Shen, G., Li, F., Han, S., Zhao, F.:
+WheelLoc: Enabling continuous location service on mobile phone for outdoor scenarios.
+IEEE Conference on Computer Communications (INFOCOM), pp. 2733-2741(2013).
+
+\bibitem{constandache}
+Constandache, I., Gaonkar, S., Sayler, M., Choudhury, R. R., Cox, L.:
+Enloc: Energy-efficient localization for mobile phones.
+IEEE Conference on Computer Communications (INFOCOM), pp. 2716-2720(2009).
+
+\bibitem{lee:wicke}
+Lee, H. J., Wicke, M., Kusy, B., Guibas, L.:
+Localization of mobile users using trajectory matching.
+Proceedings of the first ACM international workshop on Mobile entity localization and tracking in GPS-less environments, pp. 123-128(2008).
+
+\bibitem{chen}
+Chen, X.:
+Decentralized computation offloading game for mobile cloud computing.
+IEEE Transactions on Parallel and Distributed Systems, vol. 26, no. 4, pp. 974-983(2015).
+
+\bibitem{khan:wang}
+Khan, K .A., Wang, Q., Grecos, C., Luo, C., Wang, X.:
+MeshCloud: integrated cloudlet and wireless mesh network for real-time applications.
+IEEE Conference on Electronics, Circuits, and Systems (ICECS), pp. 317-320(2013).
+
+\bibitem{xia:liang}
+Xia, Q., Liang, W., Xu, Z., Zhou. B.:
+Online algorithms for location-aware task offloading in two-tiered mobile cloud environments.
+IEEE/ACM 7th International Conference on Utility and Cloud Computing, pp. 109-116(2014).
+
+\bibitem{bahtovski}
+Bahtovski, A., Gusev, M.:
+Multilingual cloudlet-based dictionary.
+IEEE International Convention on Information and Communication Technology, Electronics and Microelectronics (MIPRO), pp. 380-385(2014).
+
+\bibitem{whaiduzzaman}
+Whaiduzzaman, M., Gani, A., Naveed, A.:
+PEFC: Performance Enhancement Framework for Cloudlet in mobile cloud computing.
+IEEE International Symposium on Robotics and Manufacturing Automation (ROMA), pp. 224-229(2014).
+
+\bibitem{artail:frenn}
+Artail, A., Frenn, K., Safa, H., Artail, H.:
+A Framework of Mobile Cloudlet Centers Based on the Use of Mobile Devices as Cloudlets.
+IEEE International Conference on Advanced Information Networking and Applications (AINA), pp. 777-784(2015).
+
+\bibitem{wu:ying}
+Wu, Y., Ying, L.:
+A cloudlet-based multi-lateral resource exchange framework for mobile users.
+Proc. IEEE Conference on Computer Communications (INFOCOM), pp. 927-935(2015).
+
+\bibitem{ravi:peddoju}
+Ravi, A., Peddoju, S. K.:
+Mobility managed energy efficient Android mobile devices using cloudlet.
+IEEE Conference on Students' Technology Symposium (TechSym), pp.402-407(2014).
+
+\end{thebibliography}
+
+\end{document} 
